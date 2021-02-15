@@ -1,0 +1,17 @@
+* Introduction
+
+  This project provides a conan receipe for casadi. Most CMake options are exposed as
+  conan options and several of the plugin interfaces dependencies are managed with the
+  help of conan packages. The exception is most of the non-free libraries.
+
+  The following plugin dependencies are not handled by this receipe:
+  + ampl
+  + cplex
+  + gurobi
+  + knitro
+  + ooqp
+  + snopt
+  + sqic
+  + worhp
+  + octave and matlab interfaces
+  + [ ] bonmin, planned to provide support
