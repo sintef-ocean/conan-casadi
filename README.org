@@ -15,3 +15,6 @@
   + worhp
   + octave and matlab interfaces
   + [ ] bonmin, planned to provide support
+
+
+  https://stackoverflow.com/questions/1238035/what-are-libtools-la-file-for
