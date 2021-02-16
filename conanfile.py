@@ -105,36 +105,36 @@ class CasadiConan(ConanFile):
         "refcount_warnings=False",
         "shared=True",
         "so_version=True",
-        "thread=True",             # casadi default: False
+        "thread=False",             # casadi default: False
         "thread_mingw=False",      # window stuff?
 
         "ampl=False",
-        "blasfeo=True",            # casadi default: False
-        "blocksqp=True",           # casadi default: False
-        "bonmin=False",     # T
-        "cbc=True",                # casadi default: False
-        "clp=True",                # casadi default: False
+        "blasfeo=False",            # casadi default: False
+        "blocksqp=False",           # casadi default: False
+        "bonmin=False",     # TODO
+        "cbc=False",                # casadi default: False
+        "clp=False",                # casadi default: False
         "cplex=False",
         "csparse=True",
         "dsdp=True",               # casadi default: False
         "gurobi=False",
-        "hpmpc=True",
-        "hsl=True",                # casadi default: False
-        "ipopt=True",              # casadi default: False
+        "hpmpc=False",
+        "hsl=False",                # casadi default: False
+        "ipopt=False",              # casadi default: False
         "knitro=False",
         "lapack=False",  # conditionally on  # default: False
-        "mumps=True",              # casadi default: False
+        "mumps=False",              # casadi default: False
         "ooqp=False",
         "opencl=False",
-        "openmp=True",
-        "osqp=True",               # casadi default: False
-        "qpoases=True",            # casadi default: False
+        "openmp=False",
+        "osqp=False",               # casadi default: False
+        "qpoases=False",            # casadi default: False
         "no_qpoases_banner=True",  # casadi default: False
         "slicot=False",            # casadi default: False, libslicot-dev
         "snopt=False",
         "sqic=False",
         "sundials=True",
-        "superscs=True",           # casadi default: False
+        "superscs=False",           # casadi default: False
         "tinyxml=True",
         "worhp=False",
 
@@ -158,7 +158,7 @@ class CasadiConan(ConanFile):
 
         "build_blasfeo=True",
         "build_csparse=True",
-        "build_dsdp=True",          # casadi default: False
+        "build_dsdp=False",          # casadi default: False
         "build_hpmpc=True",
         "build_sundials=True",
         "build_tinyxml=True",
@@ -330,7 +330,7 @@ class CasadiConan(ConanFile):
             self.options["openblas"].shared = self.options.shared  # optionally?
             self.options["openblas"].use_thread = self.options.thread
             self.options["openblas"].build_lapack = True
-            self.options["openblas"].dynamic_arch = True  # TODO: Should be set optionally?
+            self.options["openblas"].dynamic_arch = True
             if self.settings.os != 'Windows':
                 self.options["openblas"].fPIC = self.options.fPIC
 
@@ -452,6 +452,7 @@ set(HSL_LIBRARIES coinhsl::coinhsl)")
         self.cpp_info.libs = ["casadi"]
         self.cpp_info.includedirs = ["casadi/include"]
         self.cpp_info.libdirs = [self.name]
+        self.cpp_info.bindirs.append("casadi")
         #self.cpp_info.builddirs.append(self.name)
 
         if self.options.osqp:
