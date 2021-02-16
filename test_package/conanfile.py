@@ -3,7 +3,7 @@ from conans import ConanFile, CMake, tools, RunEnvironment
 
 class CasadiTestConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
-    generators = ("cmake_paths", "cmake", "virtualrunenv")
+    generators = ("cmake_paths", "cmake", "virtualrunenv", "virtualenv")
 
     _cmake = None
 
@@ -66,8 +66,11 @@ class CasadiTestConan(ConanFile):
                 if casadi.trace(A) == 2:
                     self.output.info("Completed conanized casadi climax")
             except ModuleNotFoundError:
-                self.output.error("Unable to load python casadi module")
-                exit(1)
+                try:
+                    import numpy
+                except ModuleNotFoundError:
+                    self.output.error("Casadi requires 'numpy', but it was not found")
+                self.output.error("Unable to proplerly load python casadi module")
 
         self.output.info("Run consumer tests for library interfaces")
         cmake = self._configure_cmake()
