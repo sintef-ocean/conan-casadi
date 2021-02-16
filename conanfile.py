@@ -327,7 +327,7 @@ class CasadiConan(ConanFile):
                 " API changes(?) of clang::CompilerInvocation::CreateFromArgs")
 
         if self.options.lapack:
-            self.options["openblas"].shared = self.options.shared  # optionally?
+            self.options["openblas"].shared = self.options.shared
             self.options["openblas"].use_thread = self.options.thread
             self.options["openblas"].build_lapack = True
             self.options["openblas"].dynamic_arch = True
@@ -362,7 +362,6 @@ class CasadiConan(ConanFile):
   find_package(swig MODULE REQUIRED)\n\
   find_program(SWIG_EXECUTABLE swig)")
 
-
         cmakelists = os.path.join(self.name, "CMakeLists.txt")
 
         tools.replace_in_file(
@@ -385,7 +384,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR} ${CMAKE_MODULE_PATH})")
                 "add_feature_info(lapack",
                 "set(LAPACK_LIBRARIES OpenBLAS::OpenBLAS)\n\
 add_feature_info(lapack")
-
 
         if self.options.clp:
             tools.replace_in_file(
@@ -430,7 +428,6 @@ set(HSL_LIBRARIES coinhsl::coinhsl)")
         cmake = self._configure_cmake(install_prefix=self.package_folder)
         cmake.install()
 
-        # remove pkg-config casadi.pc and lib/*.cmake, -> not relocatable
         tools.rmdir(os.path.join(self.package_folder, "casadi", "pkgconfig"))
         tools.rmdir(os.path.join(self.package_folder, "lib"))
 
@@ -445,7 +442,7 @@ set(HSL_LIBRARIES coinhsl::coinhsl)")
                 package_prefix = "/opt"
 
             cmake = self._configure_cmake(install_prefix=package_prefix,
-                                      force=True)
+                                          force=True)
             cmake.build(target='package')
 
     def package_info(self):
@@ -453,7 +450,6 @@ set(HSL_LIBRARIES coinhsl::coinhsl)")
         self.cpp_info.includedirs = ["casadi/include"]
         self.cpp_info.libdirs = [self.name]
         self.cpp_info.bindirs.append("casadi")
-        #self.cpp_info.builddirs.append(self.name)
 
         if self.options.osqp:
             self.cpp_info.includedirs.append("casadi/include/osqp")

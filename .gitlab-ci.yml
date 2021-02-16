@@ -1,0 +1,101 @@
+variables: &global-variables
+    CONAN_SYSREQUIRES_MODE: enabled
+    CONAN_SYSREQUIRES_SUDO: 1
+    CONAN_NON_INTERACTIVE: 1
+    CONAN_LOGIN_USERNAME: ${KLUSTER_ARTIFACTORY_USER}
+    CONAN_PASSWORD: ${KLUSTER_ARTIFACTORY_PASSWORD}
+    KLUSTER_REMOTE: ${KLUSTER_ARTIFACTORY_URL}/artifactory/api/conan/conan-local
+    HSL_ARCHIVE: http://${KLUSTER_ARTIFACTORY_URL}/artifactory/sintef/hsl/coinhsl-2014.01.10.tar.gz
+    HSL_USER: ${KLUSTER_ARTIFACTORY_USER}
+    HSL_PASSWORD: ${KLUSTER_ARTIFACTORY_PASSWORD}
+
+stages:
+  - build
+
+# TODO: add a common prep template here
+
+#=========================================
+# Build with conan, all implemented dependencies
+
+build:conan:amd64:
+  image: conanio/gcc8
+  stage: build
+  variables:
+    <<: *global-variables
+  script:
+    - sudo pip install --upgrade pip setuptools wheel
+    - sudo pip install --upgrade conan
+    - sudo apt-get update
+    - sudo apt-get upgrade -y
+    - sudo apt-get install -y gfortran-8
+    - sudo ln -s /usr/bin/gfortran-8 /usr/bin/gfortran
+    - conan remote add kluster http://${KLUSTER_REMOTE}
+    - conan remote add sintef https://api.bintray.com/conan/sintef-ocean/conan
+    - conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+    - conan user ${CONAN_LOGIN_USERNAME} -p -r kluster
+    - conan profile new default --detect
+    - conan profile update settings.compiler.libcxx=libstdc++11 default
+    - echo "Preparations done"
+    - >
+      conan create . kluster/testing
+      --build missing
+      -o casadi:thread=True
+      -o casadi:blasfeo=True
+      -o casadi:blocksqp=True
+      -o casadi:cbc=True
+      -o casadi:clp=True
+      -o casadi:dsdp=True
+      -o casadi:hpmpc=True
+      -o casadi:hsl=True
+      -o casadi:ipopt=True
+      -o casadi:lapack=True
+      -o casadi:mumps=True
+      -o casadi:openmp=True
+      -o casadi:osqp=True
+      -o casadi:qpoases=True
+      -o casadi:superscs=True
+      -o casadi:build_dsdp=True
+    - conan upload --all -c -r kluster casadi* --retry 5 --retry-wait 10
+  tags:
+    - amd64
+
+#=========================================
+# Build with Conan, minimal
+
+build:conan:amd64:minimal:
+  image: conanio/gcc8
+  stage: build
+  variables:
+    <<: *global-variables
+  script:
+    - sudo pip install --upgrade pip setuptools wheel
+    - sudo pip install --upgrade conan
+    - sudo apt-get update
+    - sudo apt-get upgrade -y
+    - sudo apt-get install -y gfortran-8
+    - sudo ln -s /usr/bin/gfortran-8 /usr/bin/gfortran
+    - conan remote add kluster http://${KLUSTER_REMOTE}
+    - conan remote add sintef https://api.bintray.com/conan/sintef-ocean/conan
+    - conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+    - conan user ${CONAN_LOGIN_USERNAME} -p -r kluster
+    - conan profile new default --detect
+    - conan profile update settings.compiler.libcxx=libstdc++11 default
+    - echo "Preparations done"
+    - >
+      conan create . kluster/testing
+      --build missing
+      -o casadi:thread=True
+      -o casadi:hsl=True
+      -o casadi:ipopt=True
+      -o casadi:lapack=True
+      -o casadi:mumps=True
+      -o casadi:openmp=True
+    - conan upload --all -c -r kluster casadi* --retry 5 --retry-wait 10
+  tags:
+    - amd64
+
+# TODO: build a minimal supported variant for windows
+# TODO: add support for more platforms
+# Test build for clang
+# set CC, CXX, FC clang clang++, flang
+# How to make it work on Windows! :(
