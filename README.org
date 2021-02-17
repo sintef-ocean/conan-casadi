@@ -16,5 +16,8 @@
   + octave and matlab interfaces
   + [ ] bonmin, planned to provide support
 
+  - [ ] build a supported variant for windows
+  - Future work add support for more platforms
+  - [ ] Test build for clang
 
   https://stackoverflow.com/questions/1238035/what-are-libtools-la-file-for

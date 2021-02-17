@@ -17,7 +17,7 @@ stages:
 #=========================================
 # Build with conan, all implemented dependencies
 
-build:conan:amd64:
+conan:amd64:
   image: conanio/gcc8
   stage: build
   variables:
@@ -62,11 +62,12 @@ build:conan:amd64:
 #=========================================
 # Build with Conan, minimal
 
-build:conan:amd64:minimal:
+conan:amd64:minimal:
   image: conanio/gcc8
   stage: build
   variables:
     <<: *global-variables
+    CONAN_USE_ALWAYS_SHORT_PATHS: 1
   script:
     - sudo pip install --upgrade pip setuptools wheel
     - sudo pip install --upgrade conan
@@ -74,7 +75,7 @@ build:conan:amd64:minimal:
     - sudo apt-get upgrade -y
     - sudo apt-get install -y gfortran-8
     - sudo ln -s /usr/bin/gfortran-8 /usr/bin/gfortran
-    - conan remote add kluster http://${KLUSTER_REMOTE}
+    - conan remote add kluster http://${KLUSTER_REMOTE} -i 0
     - conan remote add sintef https://api.bintray.com/conan/sintef-ocean/conan
     - conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
     - conan user ${CONAN_LOGIN_USERNAME} -p -r kluster
@@ -91,11 +92,27 @@ build:conan:amd64:minimal:
       -o casadi:mumps=True
       -o casadi:openmp=True
     - conan upload --all -c -r kluster casadi* --retry 5 --retry-wait 10
+    - conan upload --all -c -r kluster openblas* --retry 5 --retry-wait 10
   tags:
     - amd64
 
-# TODO: build a minimal supported variant for windows
-# TODO: add support for more platforms
-# Test build for clang
-# set CC, CXX, FC clang clang++, flang
-# How to make it work on Windows! :(
+#=========================================
+# Build with Conan, basic
+
+conan:win64:
+  image: conanio/gcc8
+  stage: build
+  variables:
+    <<: *global-variables
+  script:
+    - conan remote add kluster http://${KLUSTER_REMOTE} -i 0
+    - conan remote add sintef https://api.bintray.com/conan/sintef-ocean/conan
+    - conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+    - conan user ${CONAN_LOGIN_USERNAME} -p -r kluster
+    - echo "Preparations done"
+    - >
+      conan create . kluster/testing
+      --build missing
+    - conan upload --all -c -r kluster casadi* --retry 5 --retry-wait 10
+  tags:
+    - windows
