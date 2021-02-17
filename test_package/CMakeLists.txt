@@ -14,7 +14,7 @@ set(_my_prefix CASADI_CONAN_)
 set(CASADI_CONAN_BASIC ON)
 set(CASADI_CONAN_SQPMETHOD ON) # Example with built-in plugins of Conic, NLP
 
-list(APPEND _plugins basic sqpmethod)
+list(APPEND _plugins basic)
 list(APPEND _plugins csparse lapack mumps hsl)    # LinSol
 list(APPEND _plugins osqp qpoases superscs hpmpc) # Conic
 list(APPEND _plugins ipopt blocksqp sqpmethod)    # NLP

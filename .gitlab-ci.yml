@@ -100,7 +100,7 @@ conan:amd64:minimal:
 # Build with Conan, basic
 
 conan:win64:
-  image: conanio/gcc8
+  image: localhost:5000/kluster2004
   stage: build
   variables:
     <<: *global-variables
@@ -110,9 +110,7 @@ conan:win64:
     - conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
     - conan user ${CONAN_LOGIN_USERNAME} -p -r kluster
     - echo "Preparations done"
-    - >
-      conan create . kluster/testing
-      --build missing
+    - conan create . kluster/testing --build missing
     - conan upload --all -c -r kluster casadi* --retry 5 --retry-wait 10
   tags:
     - windows
