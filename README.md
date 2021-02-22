@@ -163,17 +163,15 @@ Option | Default | Domain
 
 ## Known recipe issues
 
-  You may want to add the following option `casadi:copysign_undef=True` on windows.
-
-  The options have not extensively been tested, and the recipe developer was
+  - You may want to add the following option `casadi:copysign_undef=True` on windows.
+  - To build python interface on Windows, you need debug libraries of python installed.
+  - The options have not extensively been tested, and the recipe developer was
   unable to compile several of the optional interfaces on Windows using the Visual Studio
   compiler, including `blasfeo` and `hpmpc`.
-
-  In this recipe, we assume that the OpenBLAS library provides the LAPACK interface, which
+  - In this recipe, we assume that the OpenBLAS library provides the LAPACK interface, which
   it can. We have not been able to compile OpenBLAS with LAPACK on Windows yet. Without a
-  LAPACK interface, several plugins cannot be used.
-
-  When a third-party plugin interface is enabled, we assume that its dependency is handled
+  LAPACK interface, several plugins cannot be used. See [OpenBLAS on Windows](https://github.com/xianyi/OpenBLAS/wiki/How-to-use-OpenBLAS-in-Microsoft-Visual-Studio).
+  - When a third-party plugin interface is enabled, we assume that its dependency is handled
   by conan, with the exception of `slicot` and those listed below. This may not be the
   desired behaviour, e.g. instead use system-provided packages. In the future we might add
   support for this behavior.

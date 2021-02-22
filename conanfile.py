@@ -348,9 +348,9 @@ class CasadiConan(ConanFile):
 
         if self.options.lapack:
             self.options["openblas"].shared = self.options.shared
-            self.options["openblas"].use_thread = self.options.thread
             self.options["openblas"].build_lapack = True
-            #self.options["openblas"].dynamic_arch = True
+            # self.options["openblas"].use_thread = self.options.thread
+            # self.options["openblas"].dynamic_arch = True
             if self.settings.os != 'Windows':
                 self.options["openblas"].fPIC = self.options.fPIC
 
