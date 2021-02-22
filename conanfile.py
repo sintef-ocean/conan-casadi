@@ -1,5 +1,6 @@
 from conans import ConanFile, CMake, tools
 from conans.errors import ConanInvalidConfiguration
+from conans.model.version import Version
 from conans.tools import os_info
 import os
 
@@ -8,7 +9,7 @@ class CasadiConan(ConanFile):
     name = "casadi"
     version = "3.5.5"
     license = "LGPL-3.0"
-    url = "https://github.com/casadi/casadi"
+    url = "https://github.com/sintef-ocean/conan-casadi"
     homepage = "https://web.casadi.org/"
     description = \
         "CasADi is an open-source tool for nonlinear "\
@@ -18,6 +19,7 @@ class CasadiConan(ConanFile):
     generators = ("cmake_find_package", "pkg_config")
     exports = "LICENSE.txt"
 
+    _fortran = None
     _cmake = None
     _swig = False
 
@@ -33,6 +35,7 @@ class CasadiConan(ConanFile):
         "so_version":               [True, False],
         "thread":                   [True, False],
         "thread_mingw":             [True, False],
+        "with_common":              [True, False],
 
         "ampl":                     [True, False],
         "blasfeo":                  [True, False],
@@ -105,36 +108,37 @@ class CasadiConan(ConanFile):
         "refcount_warnings=False",
         "shared=True",
         "so_version=True",
-        "thread=False",             # casadi default: False
-        "thread_mingw=False",      # window stuff?
+        "thread=False",
+        "thread_mingw=False",
+        "with_common=False",
 
         "ampl=False",
-        "blasfeo=False",            # casadi default: False
-        "blocksqp=False",           # casadi default: False
+        "blasfeo=False",
+        "blocksqp=False",
         "bonmin=False",     # TODO
-        "cbc=False",                # casadi default: False
-        "clp=False",                # casadi default: False
+        "cbc=False",
+        "clp=False",
         "cplex=False",
         "csparse=True",
-        "dsdp=True",               # casadi default: False
+        "dsdp=False",
         "gurobi=False",
         "hpmpc=False",
-        "hsl=False",                # casadi default: False
-        "ipopt=False",              # casadi default: False
+        "hsl=False",
+        "ipopt=False",
         "knitro=False",
-        "lapack=False",  # conditionally on  # default: False
-        "mumps=False",              # casadi default: False
+        "lapack=False",
+        "mumps=False",
         "ooqp=False",
         "opencl=False",
         "openmp=False",
-        "osqp=False",               # casadi default: False
-        "qpoases=False",            # casadi default: False
-        "no_qpoases_banner=True",  # casadi default: False
-        "slicot=False",            # casadi default: False, libslicot-dev
+        "osqp=False",
+        "qpoases=False",
+        "no_qpoases_banner=True",
+        "slicot=False",
         "snopt=False",
         "sqic=False",
         "sundials=True",
-        "superscs=False",           # casadi default: False
+        "superscs=False",
         "tinyxml=True",
         "worhp=False",
 
@@ -142,7 +146,7 @@ class CasadiConan(ConanFile):
         "swig_import=False",
         "swig_json=True",
         "swig_matlab=False",
-        "swig_octave=False",       # EXPERIMENTAL
+        "swig_octave=False",
         "swig_python=True",        # casadi default: False
 
         "clang_jit=False",
@@ -158,14 +162,14 @@ class CasadiConan(ConanFile):
 
         "build_blasfeo=True",
         "build_csparse=True",
-        "build_dsdp=False",          # casadi default: False
+        "build_dsdp=False",
         "build_hpmpc=True",
         "build_sundials=True",
         "build_tinyxml=True",
 
         "with_doc=False",
         "with_examples=True",
-        "extra_config=CPACK_BINARY_DEB:ON"     # key:value,..  comma separated cmake definitions
+        "extra_config="     # key:value,..  comma separated cmake definitions
     )
 
     def _configure_cmake(self, install_prefix, force=False):
@@ -292,7 +296,7 @@ class CasadiConan(ConanFile):
             self.requires("openblas/[>=0.3.12]")
 
         if self.options.ipopt:
-            self.requires("ipopt/[>=3.12.0]@kluster/testing")
+            self.requires("ipopt/[>=3.13.0]@sintef/stable")
 
         if self.options.clp:
             self.output.warn("coin-clp does not currently use optimized BLAS/LAPACK")
@@ -302,7 +306,20 @@ class CasadiConan(ConanFile):
             self.output.warn("coin-cbc does not currently use optimized BLAS/LAPACK")
             self.requires("coin-cbc/[>=2.10.5]")
 
+        if self.options.mumps:
+            self.requires("coinmumps/[>=4.10.0]@sintef/stable")
+
+        if self.options.hsl:
+            self.requires("coinhsl/[>=2014.01.17]@sintef/stable")
+
     def configure(self):
+
+        if self.options.with_common:
+            self.options.lapack = True
+            self.options.qpoases = True
+            self.options.blocksqp = True
+            self.options.superscs = True
+            self.options.ipopt = True
 
         if self.options.qpoases or self.options.blocksqp or self.options.slicot:
             self.options.lapack = True
@@ -330,13 +347,17 @@ class CasadiConan(ConanFile):
             self.options["openblas"].shared = self.options.shared
             self.options["openblas"].use_thread = self.options.thread
             self.options["openblas"].build_lapack = True
-            self.options["openblas"].dynamic_arch = True
+            #self.options["openblas"].dynamic_arch = True
             if self.settings.os != 'Windows':
                 self.options["openblas"].fPIC = self.options.fPIC
 
         if self.options.slicot and os_info.is_windows:
             raise ConanInvalidConfiguration(
                 "option:slicot is not supported on Windows with this recipe")
+
+        if self.options.fortran_required:
+            # hackish way of determining fortran
+            self._fortran = tools.get_env("FC", "gfortran")
 
     def source(self):
 
@@ -460,7 +481,37 @@ set(HSL_LIBRARIES coinhsl::coinhsl)")
         if self.options.swig_python:
             self.env_info.PYTHONPATH.append(self.package_folder)
 
+        if self.options.openmp:
+            if self.settings.compiler == "gcc":
+                self.cpp_info.system_libs.append("gomp")
+            elif self.settings.compiler == "clang":
+                self.cpp_info.system_libs.append("omp")
+            else:
+                self.output.warn("Unknown which OpenMP runtime is needed for {}"
+                                 .format(self.settings.compiler))
+
+        if self.options.thread:
+            if tools.os_info.is_linux:
+                self.cpp_info.system_libs.append("pthread")
+
+        if self.options.fortran_required:
+            if self._fortran == "gfortran":
+                self.cpp_info.system_libs.append("gfortran")
+            elif self._fortran == "flang":
+                self.cpp_info.system_libs.append("flang")
+            elif self.settings.compiler == "gcc":
+                self.cpp_info.system_libs.append("gfortran")
+                self.output.warn("FC not set, assuming gfortran")
+            elif self.settings.compiler == "clang":
+                self.cpp_info.system_libs.append("gfortran")
+                self.output.warn("FC not set, assuming gfortran")
+            else:
+                self.output.warn("Not setting required fortran runtime")
+
     def system_requirements(self):
+
+        if self.options.fortran_required:
+            self.output.warn("A fortran compiler is needed.")
 
         installer = tools.SystemPackageTool()
         debian_based = (os_info.linux_distro == "ubuntu" or
@@ -473,16 +524,29 @@ set(HSL_LIBRARIES coinhsl::coinhsl)")
                 installer = tools.SystemPackageTool(tool=tools.PacManTool())
                 installer.install('mingw-w64-x86_64-winpthreads-git')
 
-        # For now: we assume that the fortran compiler is installed
-        # TODO: Need a way of handling fortran runtime
-        # flang: libflang0d-7 (flang 7)
-        # gfortran: libgfortran{3,4,5}: gfortran: {{5,6},7,{8,9,10}}
-        if self.options.fortran_required:
-            self.output.warn("A fortran compiler is needed.")
-
-        if self.options.slicot:
-            if os_info.is_linux and debian_based:
+        if debian_based:
+            if self.options.slicot:
                 installer.install("libslicot-dev")
+
+            if self._fortran == "gfortran":
+                # TODO: This is not a robust way of handling fortran runtime
+                # There are different runtimes depending on gfortran version
+                # gfortran: libgfortran{3,4,5}: maps to gcc: {{5,6},7,{8,9,10}}
+                # flang: libflang0d-7 (flang 7), do not know for other versions
                 if self.settings.compiler == "gcc":
-                    installer.install("gfortran-{}"
-                                      .format(self.settings.compiler.version))
+                    gfortran_rt = 3
+                    if Version(self.settings.compiler.version.value) == "7":
+                        gfortran_rt = 4
+                    elif Version(self.settings.compiler.version.value) > "7":
+                        gfortran_rt = 5
+
+                    installer.install("libgfortran{}".format(gfortran_rt))
+                elif self.settings.compiler == "clang":
+                    #  Todo, what is runtime compatibility?
+                    self.cpp_info.system_libs.append("libgfortran5")
+            elif self._fortran == "flang":
+                installer.install("libflang0d-7")
+            else:
+                self.output.warn(
+                    "Unknown which fortran runtime system lib is need for {}"
+                    .format(self._fortran))
