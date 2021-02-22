@@ -7,7 +7,7 @@
 [Conan.io](https://conan.io) recipe for [casadi](https://web.casadi.org/).
 Most CMake options are exposed as conan options and several of the plugin interface
 dependencies are managed with the help of conan packages. The exception is most of the
-non-free libraries, see Known recipe issues below.
+non-free libraries, see *Known recipe issues* below.
 
 
 The recipe generates library packages, which can be found at [Bintray](https://bintray.com/sintef-ocean/conan/casadi%3Asintef).
@@ -64,9 +64,9 @@ The package is usually consumed using the `conan install` command or a *conanfil
 
 3. Using the casadi's python interface
 
-  This recipe enables you to install casadi with desired plugins and use casadi's python
-  interface from a virtual environment. Use the same *conanfile.txt* as described above and
-  run for instance the following commands:
+   This recipe enables you to install casadi with desired plugins and use casadi's python
+   interface from a virtual environment. Use the same *conanfile.txt* as described above and
+   run for instance the following commands:
    ```bash
    $ mkdir casadi_env && cd casadi_env
    $ conan install .. --build missing -o casadi:swig_python=True -o casadi:clp=True

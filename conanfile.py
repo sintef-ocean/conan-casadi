@@ -287,7 +287,7 @@ class CasadiConan(ConanFile):
     def build_requirements(self):
 
         if self._swig:
-            self.build_requires("swig/[>=4.0.0]")
+            self.build_requires("swig/[>=4.0.2]")
 
     def requirements(self):
 
@@ -380,7 +380,7 @@ class CasadiConan(ConanFile):
                 os.path.join(self.name, "swig", "CMakeLists.txt"),
                 "find_package(SWIG REQUIRED)",
                 "set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})\n\
-  find_package(swig MODULE REQUIRED)\n\
+  find_package(SWIG MODULE REQUIRED)\n\
   find_program(SWIG_EXECUTABLE swig)")
 
         cmakelists = os.path.join(self.name, "CMakeLists.txt")
