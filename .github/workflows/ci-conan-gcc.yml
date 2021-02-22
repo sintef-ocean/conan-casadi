@@ -22,7 +22,7 @@ jobs:
       matrix:
         compiler_version: [8, 9]
         build_type: [Debug, Release]
-        common_options: [True, False]
+        common_options: ["True", "False"]
         os: [ubuntu-20.04]
     container:
       image: conanio/gcc${{ matrix.compiler_version }}
