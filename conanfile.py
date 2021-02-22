@@ -280,6 +280,9 @@ class CasadiConan(ConanFile):
                 self._cmake.definitions["CMAKE_SWIG_FLAGS"] = \
                     "-I{};-I{};-I{};-cpperraswarn".format(
                         swigpython, swigoctave, swiglib)
+                if self.settings.compiler == "Visual Studio" and \
+                   self.settings.build_type == "Release":
+                    self._cmake.definitions["SWIG_PYTHON_INTERPRETER_NO_DEBUG"] = True
 
             self._cmake.configure(source_folder=self.name)
         return self._cmake

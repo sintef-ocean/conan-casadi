@@ -163,6 +163,8 @@ Option | Default | Domain
 
 ## Known recipe issues
 
+  You may want to add the following option `casadi:copysign_undef=True` on windows.
+
   The options have not extensively been tested, and the recipe developer was
   unable to compile several of the optional interfaces on Windows using the Visual Studio
   compiler, including `blasfeo` and `hpmpc`.
