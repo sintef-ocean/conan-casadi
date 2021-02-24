@@ -55,6 +55,7 @@ conan:amd64:
       -o casadi:qpoases=True
       -o casadi:superscs=True
       -o casadi:build_dsdp=True
+      --update
     - conan upload --all -c -r kluster casadi* --retry 5 --retry-wait 10
   tags:
     - amd64
@@ -91,6 +92,7 @@ conan:amd64:minimal:
       -o casadi:lapack=True
       -o casadi:mumps=True
       -o casadi:openmp=True
+      --update
     - conan upload --all -c -r kluster casadi* --retry 5 --retry-wait 10
     - conan upload --all -c -r kluster openblas* --retry 5 --retry-wait 10
   tags:
@@ -110,7 +112,7 @@ conan:win64:
     - conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
     - conan user ${CONAN_LOGIN_USERNAME} -p -r kluster
     - echo "Preparations done"
-    - conan create . kluster/testing --build missing
+    - conan create . kluster/testing --build missing --update
     - conan upload --all -c -r kluster casadi* --retry 5 --retry-wait 10
   tags:
     - windows
