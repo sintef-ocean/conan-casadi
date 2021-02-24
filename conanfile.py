@@ -95,7 +95,6 @@ class CasadiConan(ConanFile):
         "with_doc":                 [True, False],
         "with_examples":            [True, False],
         "extra_config": "ANY"
-
     }
 
     default_options = (
@@ -271,6 +270,9 @@ class CasadiConan(ConanFile):
             if self.settings.compiler == 'gcc':
                 self._cmake.definitions["CMAKE_CXX_FLAGS"] = '-Wno-psabi'
 
+            if self.settings.compiler == 'Visual Studio':
+                self._cmake.definitions["_CRT_SECURE_NO_WARNINGS"] = True
+
             if self._swig:
                 swiglib = os.path.join(self.deps_env_info["swig"].PATH[0],
                                        "swiglib")
@@ -287,94 +289,7 @@ class CasadiConan(ConanFile):
             self._cmake.configure(source_folder=self.name)
         return self._cmake
 
-    def build_requirements(self):
-
-        if self._swig:
-            self.build_requires("swig/[>=4.0.2]")
-
-    def requirements(self):
-
-        if self.options.lapack:
-            self.output.info("Use LAPACK provided by OpenBLAS")
-            self.requires("openblas/[>=0.3.12]")
-
-        if self.options.ipopt:
-            self.requires("ipopt/[>=3.13.0]@sintef/stable")
-
-        if self.options.clp:
-            self.output.warn("coin-clp does not currently use optimized BLAS/LAPACK")
-            self.requires("coin-clp/[>=1.17.6]")
-
-        if self.options.cbc:
-            self.output.warn("coin-cbc does not currently use optimized BLAS/LAPACK")
-            self.requires("coin-cbc/[>=2.10.5]")
-
-        if self.options.mumps:
-            self.requires("coinmumps/[>=4.10.0]@sintef/stable")
-
-        if self.options.hsl:
-            self.requires("coinhsl/[>=2014.01.17]@sintef/stable")
-
-    def configure(self):
-
-        if self.options.with_common:
-            self.options.lapack = True
-            self.options.qpoases = True
-            self.options.blocksqp = True
-            self.options.superscs = True
-            self.options.ipopt = True
-
-        if self.options.qpoases or self.options.blocksqp or self.options.slicot:
-            self.options.lapack = True
-
-        if self.options.blocksqp:
-            self.options.qpoases = True
-
-        if self.options.hpmpc:
-            self.options.blasfeo = True
-
-        if self.options.sqic or self.options.slicot or self.options.lapack:
-            self.options.fortran_required = True
-
-        if self.options.swig_export or self.options.swig_import or \
-           self.options.swig_json or self.options.swig_matlab or \
-           self.options.swig_octave or self.options.swig_python:
-            self._swig = True
-
-        if self.options.clang_jit:
-            self.output.warn(
-                "'clang_jit': May not work for llvm 10, due to" +
-                " API changes(?) of clang::CompilerInvocation::CreateFromArgs")
-
-        if self.options.lapack:
-            self.options["openblas"].shared = self.options.shared
-            self.options["openblas"].build_lapack = True
-            # self.options["openblas"].use_thread = self.options.thread
-            # self.options["openblas"].dynamic_arch = True
-            if self.settings.os != 'Windows':
-                self.options["openblas"].fPIC = self.options.fPIC
-
-        if self.options.slicot and os_info.is_windows:
-            raise ConanInvalidConfiguration(
-                "option:slicot is not supported on Windows with this recipe")
-
-        if self.options.fortran_required:
-            # hackish way of determining fortran
-            self._fortran = tools.get_env("FC", "gfortran")
-
-    def source(self):
-
-        _git = tools.Git(folder=self.name)
-        _git.clone("https://github.com/casadi/casadi.git",
-                   branch=self.version,
-                   shallow=True)
-
-        if self.options.superscs or self.options.osqp or \
-           self.options.blasfeo or self.options.hpmpc:
-            self.output.info("Running git submodule for blasfeo/hpmpc/osqp/superscs")
-            self.run("git submodule update --init --recursive",
-                     cwd=os.path.join(self.name, "external_packages"))
-
+    def _patch_sources(self):
         if self.options.swig_export or self.options.swig_import or \
            self.options.swig_json or self.options.swig_matlab or \
            self.options.swig_octave or self.options.swig_python:
@@ -385,6 +300,15 @@ class CasadiConan(ConanFile):
                 "set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})\n\
   find_package(SWIG MODULE REQUIRED)\n\
   find_program(SWIG_EXECUTABLE swig)")
+
+        if self.options.superscs and self.settings.compiler == "Visual Studio":
+            tools.replace_in_file(
+                os.path.join(self.name,
+                             "external_packages",
+                             "superscs",
+                             "CMakeLists.txt"),
+                "target_link_libraries(superscs linsys m",
+                "target_link_libraries(superscs linsys")
 
         cmakelists = os.path.join(self.name, "CMakeLists.txt")
 
@@ -444,7 +368,100 @@ set(HSL_LIBRARIES coinhsl::coinhsl)")
                 "m->id->nnz",
                 "m->id->nz")
 
+    def build_requirements(self):
+        if self._swig:
+            self.build_requires("swig/[>=4.0.2]")
+
+    def configure(self):
+
+        if self.options.with_common:
+            self.options.lapack = True
+            self.options.qpoases = True
+            self.options.blocksqp = True
+            self.options.superscs = True
+            if self.settings.compiler != "Visual Studio":
+                self.options.ipopt = True
+            else:
+                self.output.warn(
+                    "Ipopt is not enabled using 'with_common' with this compiler")
+
+        if self.options.qpoases or self.options.blocksqp or self.options.slicot:
+            self.options.lapack = True
+
+        if self.options.blocksqp:
+            self.options.qpoases = True
+
+        if self.options.hpmpc:
+            self.options.blasfeo = True
+
+        if self.options.swig_export or self.options.swig_import or \
+           self.options.swig_json or self.options.swig_matlab or \
+           self.options.swig_octave or self.options.swig_python:
+            self._swig = True
+
+        if self.options.clang_jit:
+            self.output.warn(
+                "'clang_jit': May not work for llvm 10, due to" +
+                " API changes(?) of clang::CompilerInvocation::CreateFromArgs")
+
+        if self.options.lapack:
+            self.options["openblas"].shared = self.options.shared
+            self.options["openblas"].build_lapack = True
+
+            if self.settings.os != 'Windows':
+                self.options["openblas"].fPIC = self.options.fPIC
+
+        if self.options.slicot and os_info.is_windows:
+            raise ConanInvalidConfiguration(
+                "option:slicot is not supported on Windows with this recipe")
+
+        if self.options.fortran_required:
+            # hackish way of determining fortran
+            self._fortran = tools.get_env("FC", "gfortran")
+
+    def requirements(self):
+
+        if self.options.lapack:
+            self.output.info("Use LAPACK provided by OpenBLAS")
+            if self.settings.compiler == "Visual Studio":
+                self.requires("openblas/[>=0.3.13]@sintef/testing")
+            else:
+                self.requires("openblas/[>=0.3.13]")
+
+        if self.options.ipopt:
+            self.requires("ipopt/[>=3.13.0]@sintef/stable")
+
+        if self.options.clp:
+            self.output.warn("coin-clp does not currently use optimized BLAS/LAPACK")
+            self.requires("coin-clp/[>=1.17.6]")
+
+        if self.options.cbc:
+            self.output.warn("coin-cbc does not currently use optimized BLAS/LAPACK")
+            self.requires("coin-cbc/[>=2.10.5]")
+
+        if self.options.mumps:
+            if self.settings.compiler != "Visual Studio":
+                self.requires("coinmumps/[>=4.10.0]@sintef/stable")
+            else:
+                pass
+                #self.requires("coinmumps/[>=4.10.0]@sintef/testing")
+        if self.options.hsl:
+            self.requires("coinhsl/[>=2014.01.17]@sintef/stable")
+
+    def source(self):
+        _git = tools.Git(folder=self.name)
+        _git.clone("https://github.com/casadi/casadi.git",
+                   branch=self.version,
+                   shallow=True)
+
+        if self.options.superscs or self.options.osqp or \
+           self.options.blasfeo or self.options.hpmpc:
+            self.output.info("Running git submodule for blasfeo/hpmpc/osqp/superscs")
+            self.run("git submodule update --init --recursive",
+                     cwd=os.path.join(self.name, "external_packages"))
+
     def build(self):
+        self._patch_sources()
         cmake = self._configure_cmake(install_prefix=self.package_folder)
         cmake.build()
 
@@ -472,7 +489,7 @@ set(HSL_LIBRARIES coinhsl::coinhsl)")
     def package_info(self):
         self.cpp_info.libs = ["casadi"]
         self.cpp_info.includedirs = ["casadi/include"]
-        self.cpp_info.libdirs = [self.name]
+        self.cpp_info.libdirs = ["casadi"]
         self.cpp_info.bindirs.append("casadi")
 
         if self.options.osqp:

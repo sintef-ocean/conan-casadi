@@ -9,7 +9,6 @@ Most CMake options are exposed as conan options and several of the plugin interf
 dependencies are managed with the help of conan packages. The exception is most of the
 non-free libraries, see *Known recipe issues* below.
 
-
 The recipe generates library packages, which can be found at [Bintray](https://bintray.com/sintef-ocean/conan/casadi%3Asintef).
 The package is usually consumed using the `conan install` command or a *conanfile.txt*.
 
@@ -31,6 +30,7 @@ The package is usually consumed using the `conan install` command or a *conanfil
 
    [options]
    casadi:shared=True
+   casadi:lapack=True
    casadi:swig_python=True
 
    [imports]
@@ -99,7 +99,7 @@ Option | Default | Domain
 `so_version`          | True  |     [True, False]
 `thread`              | False |     [True, False]
 `thread_mingw`        | False |     [True, False]
-`with_common`         | False |     [True, False]
+`with_common`         | False |     [True, False], not Ipopt on Windows (MSVC)
 **Plugin interfaces**
 `ampl`                | False |     [True, False]
 `blasfeo`             | False |     [True, False]
@@ -115,7 +115,7 @@ Option | Default | Domain
 `hsl`                 | False |     [True, False]
 `ipopt`               | False |     [True, False]
 `knitro`              | False |     [True, False]
-`lapack`              | False |     [True, False], will be enabled if needed
+`lapack`              | False |     [True, False], will be enabled if needed, provided by OpenBLAS.
 `mumps`               | False |     [True, False]
 `ooqp`                | False |     [True, False]
 `opencl`              | False |     [True, False]
@@ -161,20 +161,25 @@ Option | Default | Domain
 `extra_config`        |  |     ANY, key:value,..  comma separated cmake definitions
 
 
+The `with_common` option enables `lapack`, `qpoases`, `blocksqp`, `superscs`, and `ipopt`,
+except on Windows with Visual Studio, where `ipopt` is not currently activated.
+
 ## Known recipe issues
 
+  - Several managed dependencies only provide static libraries on Windows (MSVC).
+  This does not work well with the dynamic plugin loading system of Casadi.
+  As such, some options will not be available on Windows with this recipe.
+  - The recipe developer has not managed to compile some dependencies with dynamic libraries on windows.
   - You may want to add the following option `casadi:copysign_undef=True` on windows.
   - To build python interface on Windows, you need debug libraries of python installed.
   - The options have not extensively been tested, and the recipe developer was
   unable to compile several of the optional interfaces on Windows using the Visual Studio
   compiler, including `blasfeo` and `hpmpc`.
-  - In this recipe, we assume that the OpenBLAS library provides the LAPACK interface, which
-  it can. We have not been able to compile OpenBLAS with LAPACK on Windows yet. Without a
-  LAPACK interface, several plugins cannot be used. See [OpenBLAS on Windows](https://github.com/xianyi/OpenBLAS/wiki/How-to-use-OpenBLAS-in-Microsoft-Visual-Studio).
   - When a third-party plugin interface is enabled, we assume that its dependency is handled
   by conan, with the exception of `slicot` and those listed below. This may not be the
   desired behaviour, e.g. instead use system-provided packages. In the future we might add
   support for this behavior.
+  - Building octave/matlab interfaces requires special effort with respect to swig sources, which will not be handled by this recipe.
 
   Plugin libraries that are not handled by this recipe are
   - ampl
