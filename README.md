@@ -62,7 +62,7 @@ The package is usually consumed using the `conan install` command or a *conanfil
    where `<build_type>` is e.g. `Debug` or `Release`.
    You can now continue with the usual dance with cmake commands for configuration and compilation. For details on how to use conan, please consult [Conan.io docs](http://docs.conan.io/en/latest/)
 
-3. Using the casadi's python interface
+3. Using casadi's python interface
 
    This recipe enables you to install casadi with desired plugins and use casadi's python
    interface from a virtual environment. Use the same *conanfile.txt* as described above and
@@ -74,6 +74,7 @@ The package is usually consumed using the `conan install` command or a *conanfil
    $ # on windows you may also need: activate_run.bat
    $ python
    ```
+   You need to install python dependencies yourself, e.g. `numpy`.
 
    ```python
    import casadi
