@@ -442,9 +442,6 @@ set(HSL_LIBRARIES coinhsl::coinhsl)")
         if self.options.mumps:
             if self.settings.compiler != "Visual Studio":
                 self.requires("coinmumps/[>=4.10.0]@sintef/stable")
-            else:
-                pass
-                #self.requires("coinmumps/[>=4.10.0]@sintef/testing")
         if self.options.hsl:
             self.requires("coinhsl/[>=2014.01.17]@sintef/stable")
 
