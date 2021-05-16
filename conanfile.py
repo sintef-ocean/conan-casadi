@@ -424,12 +424,12 @@ set(HSL_LIBRARIES coinhsl::coinhsl)")
         if self.options.lapack:
             self.output.info("Use LAPACK provided by OpenBLAS")
             if self.settings.compiler == "Visual Studio":
-                self.requires("openblas/[>=0.3.13]@sintef/testing")
+                self.requires("openblas/[>=0.3.15]@sintef/testing")
             else:
                 self.requires("openblas/[>=0.3.13]")
 
         if self.options.ipopt:
-            self.requires("ipopt/[>=3.13.0]@sintef/stable")
+            self.requires("ipopt/[>=3.13.4]@sintef/stable")
 
         if self.options.clp:
             self.output.warn("coin-clp does not currently use optimized BLAS/LAPACK")
