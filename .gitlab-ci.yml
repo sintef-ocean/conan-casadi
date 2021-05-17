@@ -39,6 +39,7 @@ conan:amd64:
     - >
       conan create . kluster/testing
       --build missing
+      --build casadi
       -o casadi:thread=True
       -o casadi:blasfeo=True
       -o casadi:blocksqp=True
@@ -86,6 +87,7 @@ conan:amd64:minimal:
     - >
       conan create . kluster/testing
       --build missing
+      --build casadi
       -o casadi:thread=True
       -o casadi:hsl=True
       -o casadi:ipopt=True
@@ -111,7 +113,7 @@ conan:win64:
     - conan remote add sintef https://conan.sintef.io/public
     - conan user ${CONAN_LOGIN_USERNAME} -p -r kluster
     - echo "Preparations done"
-    - conan create . kluster/testing --build missing --update
+    - conan create . kluster/testing --build missing --build casadi --update
     - conan upload --all -c -r kluster casadi* --retry 5 --retry-wait 10
   tags:
     - windows
