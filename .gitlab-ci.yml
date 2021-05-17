@@ -34,6 +34,7 @@ conan:amd64:
     - conan user ${CONAN_LOGIN_USERNAME} -p -r kluster
     - conan profile new default --detect
     - conan profile update settings.compiler.libcxx=libstdc++11 default
+    - conan config set general.revisions_enabled=1
     - echo "Preparations done"
     - >
       conan create . kluster/testing
@@ -80,6 +81,7 @@ conan:amd64:minimal:
     - conan user ${CONAN_LOGIN_USERNAME} -p -r kluster
     - conan profile new default --detect
     - conan profile update settings.compiler.libcxx=libstdc++11 default
+    - conan config set general.revisions_enabled=1
     - echo "Preparations done"
     - >
       conan create . kluster/testing
