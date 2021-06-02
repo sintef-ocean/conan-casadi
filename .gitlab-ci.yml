@@ -30,7 +30,7 @@ conan:amd64:
     - sudo apt-get install -y gfortran-8
     - sudo ln -s /usr/bin/gfortran-8 /usr/bin/gfortran
     - conan remote add kluster http://${KLUSTER_REMOTE} -i 0
-    - conan remote add sintef https://conan.sintef.io/public
+    - conan remote add sintef https://artifactory.smd.sintef.no/artifactory/api/conan/conan-local
     - conan user ${CONAN_LOGIN_USERNAME} -p -r kluster
     - conan profile new default --detect
     - conan profile update settings.compiler.libcxx=libstdc++11 default
@@ -78,7 +78,7 @@ conan:amd64:minimal:
     - sudo apt-get install -y gfortran-8
     - sudo ln -s /usr/bin/gfortran-8 /usr/bin/gfortran
     - conan remote add kluster http://${KLUSTER_REMOTE} -i 0
-    - conan remote add sintef https://conan.sintef.io/public
+    - conan remote add sintef https://artifactory.smd.sintef.no/artifactory/api/conan/conan-local
     - conan user ${CONAN_LOGIN_USERNAME} -p -r kluster
     - conan profile new default --detect
     - conan profile update settings.compiler.libcxx=libstdc++11 default
@@ -110,7 +110,7 @@ conan:win64:
     <<: *global-variables
   script:
     - conan remote add kluster http://${KLUSTER_REMOTE} -i 0
-    - conan remote add sintef https://conan.sintef.io/public
+    - conan remote add sintef https://artifactory.smd.sintef.no/artifactory/api/conan/conan-local
     - conan user ${CONAN_LOGIN_USERNAME} -p -r kluster
     - echo "Preparations done"
     - conan create . kluster/testing --build missing --build casadi --update
