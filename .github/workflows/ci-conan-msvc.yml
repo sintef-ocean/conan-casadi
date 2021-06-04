@@ -26,7 +26,8 @@ jobs:
         build_type: [Release]
         compiler_version: [16]
         compiler_toolset: [v141, v142]
-
+        common_options: ["True", "False"]
+        opt_thread: ["True", "False"]
     steps:
       - uses: actions/checkout@v2
       - name: Install prerequisites
@@ -42,6 +43,8 @@ jobs:
             -s compiler.toolset=${{ matrix.compiler_toolset }} `
             -s compiler.version=${{ matrix.compiler_version }} `
             -o casadi:copysign_undef=True `
+            -o casadi:with_common=${{ matrix.common_options }} `
+            -o casadi:thread=${{ matrix.opt_thread }} `
             -b missing -b outdated . sintef/stable
       - name: Conan upload
         run: |
