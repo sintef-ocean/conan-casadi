@@ -408,7 +408,7 @@ set(HSL_LIBRARIES coinhsl::coinhsl)")
             self.options["openblas"].shared = self.options.shared
             self.options["openblas"].build_lapack = True
 
-            if self.settings.os != 'Windows':
+            if self.settings.os != 'Windows' and not self.options.shared:
                 self.options["openblas"].fPIC = self.options.fPIC
 
         if self.options.slicot and os_info.is_windows:
